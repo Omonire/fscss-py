@@ -1,0 +1,3 @@
+include README.md
+include LICENSE
+recursive-include fscss/_vendor/xfscss *.js *.json *.md LICENSE

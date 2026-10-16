@@ -1,0 +1,66 @@
+// lib/processor.js
+import {
+  replaceRe,
+  procExt,
+  procVar,
+  procFun,
+  procFunObj, 
+  procArr,
+  procEv,
+  procRan,
+  transformCssValues,
+  procNum,
+  vfc,
+  processNLPCSS,
+  getSimilarity,
+  resolveMatches,
+  extractMatchCalls, 
+  applyFscssTransformations,
+  procExC,
+  procCnt,
+  procDef, 
+  procChe,
+  procInline, 
+  execObj
+} from "./functions/all.js";
+import { procAxisShorthand } from "./functions/shorthands.js";
+import { procImp } from "./functions/procImp.js";
+import { impSel } from "./functions/impSel.js";
+import { impFrom } from "./functions/impFrom.js";
+export async function processFscss(css, options = {}) {
+  const { inputDir = process.cwd() } = options;
+
+  if (!css.includes("exec.obj.block(all)")) {
+    if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
+    if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import pick)")){css = await impSel(css, {inputDir});}
+    if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)")){css = await impFrom(css, {inputDir});}
+    if(!css.includes("exec.obj.block(f import)")){css = await procImp(css, {inputDir});} 
+    if(!css.includes("exec.obj.block(vfc)")) css = vfc(css);
+    if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
+    if(!css.includes("exec.obj.block(store:before)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
+    if(!css.includes("exec.obj.block(ext:before)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
+    if(!css.includes("exec.obj.block(f var)"))css = procVar(css);
+    if(!css.includes("exec.obj.block(fun)"))css = procFun(css);
+    if(!css.includes("exec.obj.block(obj)"))css = procFunObj(css);
+    if(!css.includes("exec.obj.block(length)"))css = procChe(css);
+    if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
+    if(!css.includes("exec.obj.block(define)"))css = procDef(css);
+    if(!css.includes("exec.obj.block(arr)"))css = procArr(css);
+    if(!css.includes("exec.obj.block(inline)"))css=procInline(css);
+    if(!css.includes("exec.obj.block(shorts)"))css=procAxisShorthand(css);
+    if(!css.includes("exec.obj.block(event)"))css = procEv(css);
+    if(!css.includes("exec.obj.block(random)"))css = procRan(css);
+    if(!css.includes("exec.obj.block(copy)"))css = transformCssValues(css);
+    if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
+    if(!css.includes("exec.obj.block(store:after)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
+    if(!css.includes("exec.obj.block(num)"))css = procNum(css);
+    if(!css.includes("exec.obj.block(ext:after)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
+    if(!css.includes("exec.obj.block(t group)"))css = applyFscssTransformations(css);
+     if(!css.includes("exec.obj.block(shorts)"))css=procAxisShorthand(css);
+    if(!css.includes("exec.obj.block(length)"))css = procChe(css);
+    if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
+    if(!css.includes("exec.obj.block(debug)"))css = procExC(css);
+      }
+
+  return execObj(css);
+}

@@ -1,0 +1,328 @@
+# FSCSS
+
+**FSCSS (Figured Shorthand Cascading Style Sheets)** is a lightweight, modern CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
+
+It is designed to make styling faster, reusable, and expressive — without losing standard CSS compatibility.
+
+---
+
+##  Core Features
+
+### FSCSS works in both:
+
+-  Browser (via CDN / API)
+-  Node.js (CLI / build tools)
+  
+---
+**Properties Shorthands**
+
+Example:
+
+This
+```css
+.media-frame > img {
+  inset: ratio-fit(16 / 9);
+  obj-fit: cover;
+}
+```
+To:
+```css
+.media-frame > img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 16 / 9;
+  width: min(100%, 100cqh * 16 / 9);
+  height: min(100%, 100cqw * 9 / 16);
+  object-fit: cover;
+}
+```
+This:
+```css
+.card {
+  px: 16px;
+  py: 14px;
+  mx: auto;
+  max-w: 360px;
+}
+```
+To:
+```css
+.card {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 360px;
+}
+```
+This:
+```css
+.card {
+  stack: 12px;
+  px: 16px;
+  py: 14px;
+  rounded: 12px;
+  bg: #12121a;
+  border-x: 1px solid rgba(255,255,255,.08);
+  shadow: 0 8px 24px rgba(0,0,0,.35);
+  max-w: 360px;
+}
+.avatar { size: 40px; rounded: 50%; }
+```
+
+docs: https://fscss.devtem.org/shorthands 
+
+**Semantic Pattern Matching**
+
+- `pattern(threshold: "description", css)` → defines a fuzzy-matched style
+- Bare phrases in your stylesheet get matched against the closest pattern description and replaced with its CSS
+```css
+pattern(
+0.5:
+"Hello World card",
+`
+  border-radius: 12px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+`)
+
+pattern(0.6: "rounded primary button", `
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #764ba2;
+  font-weight: 600;
+  cursor: pointer;
+`)
+```
+**Improved pattern:**
+
+```css
+pattern(0.6: "rounded primary button with color: white, bg: red", `
+background: @match(background:?\s([#\w\d-_]+)) @match(bg:?\s([#\w\d-_]+));
+color: @match(color:?\s([#\w\d-_]+)) @match(text:?\s([#\w\d-_]+));
+border-radius: 25px;
+padding: 10px 20px;
+border: 2px solid;
+font-weight: 700;
+`)
+```
+Use
+
+```
+.primary {
+  rounded primary button with color: #0BCEAE, background: midnightblue
+}
+```
+---
+
+**Reusable Logic**
+
+- `@define` → reusable blocks
+- `@fun` → function-style reusable properties
+- `@obj` → structured reusable style objects
+```css
+@define center(elem){`
+  @use(elem){
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+`}
+
+@center(.box)
+```
+---
+
+**Variables & Dynamic Values**
+
+- `$var` → standard variables
+- `str()` → inline expandable text variables
+- fallback operator → `$/var || fallback`
+```css
+$color: red;
+
+.box{
+  color: $color!;
+}
+```
+---
+
+**Arrays/list & Data Handling**
+
+- `@arr` → define arrays
+- `.list`, `.join`, `.randint`
+- loop generation
+- with random
+```css
+@arr colors[#1E2783, #8C29B2, #C41348]
+
+.box{
+  background: @random(@arr.colors);
+}
+```
+---
+
+**Shorthand & Utilities**
+
+- `%n()` → apply multiple properties
+- `rpt()` → repeat values
+- `copy()` → reuse values
+- `@ext()` → extract strings
+
+`%2(width, height [: 200px;])`
+
+---
+
+**Dynamic & Smart helpers**
+
+- `@random()` - dynamic values
+- `num()` - math evaluation
+- `count()` - number ranges
+- `inline()` - remove `{}`
+`width: num(89+11/4)px;`
+
+---
+
+**Animations & Selectors**
+
+- Keyframes shorthand
+- Attribute selectors
+- Vendor prefixing
+- 
+```css
+$(@keyframes trans, .box, #hero .card, #dashboard .card &[3s ease-in infinite]){
+  from{ width:0; }
+  to{ width:200px; }
+}
+```
+---
+
+**Imports & Modularity**
+
+- Local & remote imports
+- Alias support
+- Wildcard import
+```css
+@import((*) from "mymodules/style.fscss")
+```
+Modules:
+https://github.com/fscss-ttr/fscss-modules/
+
+---
+
+**Logic System**
+
+- `@event` → conditional styling
+- `exec()` → debugging tools
+
+```css
+@event theme(mode){
+ if mode:dark{
+  return: #1a1a1a;
+ }
+ el{
+  return: #f8f8f8;
+ } 
+} 
+```
+
+---
+
+## Example
+
+```css
+@import((flex-x) from flex-control)
+
+@arr colors[#1E2783, #8C29B2, #C41348]
+
+.container{
+  @flex-x()
+  background: @random(@arr.colors);
+}
+```
+---
+
+## Installation
+
+**Global**
+```bash
+npm install -g fscss
+```
+**Local**
+```bash
+npm install fscss
+```
+---
+
+**Browser Usage**
+```html
+<script src="https://cdn.jsdelivr.net/npm/fscss@latest/runtime.min.js" defer></script>
+```
+**Module**
+```js
+import xfscss from "https://cdn.jsdelivr.net/npm/fscss@latest/esm.min.js";
+xfscss.reboot();
+
+```
+
+**Use directly:**
+```html
+<link type="text/fscss" href="style.fscss">
+```
+**Or:**
+```html
+<style>
+@import(exec("style.fscss"))
+</style>
+```
+**Or:**
+```css
+@import((*) from "style.fscss")
+```
+
+> Use "defer" or "async" when loading the script.
+
+---
+
+## What FSCSS Does
+
+FSCSS transforms shorthand syntax into valid CSS, making your styles:
+
+- shorter
+- reusable
+- dynamic
+- easier to maintain
+
+---
+
+## Ecosystem
+
+- VS Code Extension (syntax + snippets)
+- FSCSS Modules
+- CLI Compiler
+- Browser Runtime
+
+---
+Check out [st-core.fscss](https://github.com/fscss-ttr/st-core.fscss) 
+
+Learn More
+
+https://fscss.devtem.org/
+
+---
+
+License
+
+MIT *© Figsh — FSCSS*
+
+---
+
+![Repo overview](./docs/charts/repo-overview.svg)
+![Languages](./docs/charts/languages.svg)

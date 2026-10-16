@@ -1,0 +1,21 @@
+/* Failed import: C:\Users\THIS PC\OneDrive\Desktop\Projects\FSCSS_Python_Lib\style.fscss */
+
+/* Failed import: C:\Users\THIS PC\OneDrive\Desktop\Projects\FSCSS_Python_Lib\style.fscss */
+
+@mirr(colors, ind)
+
+.container{
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
+background: #8C29B2;
+}
+.container .card{
+display: flex;
+justify-content: center;
+background: linear-gradient(40deg, #1E2783,#8C29B2,#C41348);
+}
+.btn{
+rounded primary button
+}
