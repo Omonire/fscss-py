@@ -6,15 +6,17 @@ framework - each helper is written defensively so importing this module never
 requires Flask/Django/etc.
 """
 
-import os
-import time
+import logging
 import threading
+import time
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
 from .core import compile_file
 
 __all__ = ["compile_dir", "iter_fscss", "watch_dir", "init_flask", "init_django"]
+
+logger = logging.getLogger("fscss")
 
 PathLike = Union[str, Path]
 
@@ -45,9 +47,8 @@ def watch_dir(directory: PathLike, interval: float = 1.0, callback=None) -> thre
     Returns the running thread.
     """
     root = Path(directory)
-    mtimes = {}
 
-    def _snapshot():
+    def _snapshot() -> dict:
         snap = {}
         for src in iter_fscss(root):
             try:
@@ -56,22 +57,22 @@ def watch_dir(directory: PathLike, interval: float = 1.0, callback=None) -> thre
                 pass
         return snap
 
-    def _loop():
-        mtimes.update(_snapshot())
+    def _loop() -> None:
+        mtimes = _snapshot()
         while True:
             time.sleep(interval)
             new = _snapshot()
             for src, mtime in new.items():
-                if mtimes.get(src) != mtime:
+                prev = mtimes.get(src)
+                if prev != mtime:
                     out = src.with_suffix(".css")
                     try:
                         compile_file(src, out)
                         if callback:
                             callback(src, out)
                     except Exception as e:  # pragma: no cover - dev helper
-                        print(f"[fscss] compile failed for {src}: {e}")
-            mtimes.clear()
-            mtimes.update(new)
+                        logger.warning("compile failed for %s: %s", src, e)
+            mtimes = new
 
     thread = threading.Thread(target=_loop, daemon=True)
     thread.start()
@@ -119,7 +120,7 @@ def init_django(directory: Optional[PathLike] = None) -> None:
     """
     if directory is None:
         try:
-            from django.conf import settings  # type: ignore
+            from django.conf import settings
 
             base = getattr(settings, "BASE_DIR", None)
             directory = Path(base) / "static" if base else "static"

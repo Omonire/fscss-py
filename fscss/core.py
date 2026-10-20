@@ -1,5 +1,3 @@
-import os
-import sys
 import shutil
 import subprocess
 import tempfile
@@ -8,12 +6,19 @@ from typing import Optional, Union
 
 __all__ = ["compile_string", "compile_file", "compile"]
 
+_node_cache: Optional[str] = None
+
 
 def _find_node() -> Optional[str]:
     """Find node executable."""
+    global _node_cache
+    if _node_cache is not None:
+        return _node_cache
     for name in ("node", "nodejs"):
-        if shutil.which(name):
-            return name
+        found = shutil.which(name)
+        if found:
+            _node_cache = name
+            return _node_cache
     return None
 
 
@@ -29,6 +34,7 @@ def compile_file(
     output_path: Union[str, Path],
     *,
     cwd: Optional[Union[str, Path]] = None,
+    timeout: Optional[float] = None,
 ) -> str:
     """Compile an FSCSS file to CSS.
 
@@ -58,8 +64,16 @@ def compile_file(
             stderr=subprocess.STDOUT,
             text=True,
             check=True,
+            timeout=timeout,
         )
         return result.stdout or ""
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout or e.stderr
+        if out:
+            msg = out.decode(errors="replace") if isinstance(out, bytes) else out
+        else:
+            msg = str(e)
+        raise RuntimeError(f"Compilation timed out: {msg}".strip()) from e
     except subprocess.CalledProcessError as e:
         msg = e.stdout or e.stderr or str(e)
         raise RuntimeError(msg.strip()) from e
@@ -70,52 +84,32 @@ def compile_string(
     *,
     input_dir: Union[str, Path] = ".",
     output_path: Optional[Union[str, Path]] = None,
+    timeout: Optional[float] = None,
 ) -> str:
     """Compile FSCSS source string to CSS string.
 
     If output_path is not provided, compiled CSS is returned as a string.
     """
     if output_path is None:
-        # Write to temp file
         input_dir = Path(input_dir).resolve()
         input_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".fscss", dir=str(input_dir), delete=False, encoding="utf-8"
-        ) as f:
-            f.write(source)
-            tmp_in = Path(f.name)
-        tmp_out = tmp_in.with_suffix(".css")
-        try:
-            compile_file(tmp_in, tmp_out, cwd=input_dir)
-            css = tmp_out.read_text(encoding="utf-8")
-            return css
-        finally:
-            try:
-                tmp_in.unlink(missing_ok=True)
-            except Exception:
-                pass
-            try:
-                tmp_out.unlink(missing_ok=True)
-            except Exception:
-                pass
+        with tempfile.TemporaryDirectory(dir=str(input_dir)) as td:
+            tmp_in = Path(td) / "tmp.fscss"
+            tmp_out = tmp_in.with_suffix(".css")
+            tmp_in.write_text(source, encoding="utf-8")
+            compile_file(tmp_in, tmp_out, cwd=input_dir, timeout=timeout)
+            if tmp_out.exists():
+                return tmp_out.read_text(encoding="utf-8")
+            return ""
     else:
-        # Write source to temp input in same dir as output for relative imports
         output_path = Path(output_path).resolve()
         out_dir = output_path.parent
         out_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".fscss", dir=str(out_dir), delete=False, encoding="utf-8"
-        ) as f:
-            f.write(source)
-            tmp_in = Path(f.name)
-        try:
-            compile_file(tmp_in, output_path, cwd=out_dir)
+        with tempfile.TemporaryDirectory(dir=str(out_dir)) as td:
+            tmp_in = Path(td) / "tmp.fscss"
+            tmp_in.write_text(source, encoding="utf-8")
+            compile_file(tmp_in, output_path, cwd=out_dir, timeout=timeout)
             return output_path.read_text(encoding="utf-8") if output_path.exists() else ""
-        finally:
-            try:
-                tmp_in.unlink(missing_ok=True)
-            except Exception:
-                pass
 
 
 compile = compile_file
