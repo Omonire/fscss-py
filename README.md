@@ -1,6 +1,6 @@
 # fscss (Python)
 
-Python wrapper for [FSCSS](https://fscss.devtem.org/) (Figured Shorthand CSS). This package vendors the official FSCSS Node.js compiler (`xfscss`) and runs it via Node.js.
+Python wrapper for [FSCSS](https://fscss.devtem.org/) (Figured Shorthand CSS). Engineered by [Omonire](https://github.com/omonire). This package vendors the official FSCSS Node.js compiler (`xfscss`) and runs it via Node.js.
 
 ## Requirements
 
