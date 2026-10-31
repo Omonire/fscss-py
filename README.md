@@ -171,11 +171,17 @@ fscss.init_django()
 Full language reference: <https://fscss.devtem.org/>.
 
 ```fscss
-/* shorthands */
-.card { px: 16px; py: 14px; rounded: 12px; shadow: 0 8px 24px rgba(0,0,0,.35); }
-
-/* variables */
+/* variables first — declarations after a one-line rule are dropped (see below) */
 $c: red;
+
+/* shorthands */
+.card {
+  px: 16px;
+  py: 14px;
+  rounded: 12px;
+  shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
 .box { color: $c!; }          /* → var(--c) */
 
 /* reusable mixins */
@@ -202,9 +208,11 @@ worth knowing before you file a bug.
   `body{bg:red}` (no `;`) is left untouched. The short aliases (`m`, `px`,
   `rounded`, …) also accept a closing `}`.
 - **There is no `c:` shorthand.** Use `color: …`.
-- **`$var` expansion depends on layout.** `$c: red;` followed by
-  `.x{ color: $c!; }` emits `var(--c)`; putting the declaration on its own line
-  inside a block can inline the raw value instead.
+- **`$var` handling is line-based and order-sensitive.** Declare variables
+  before any rule, and put braces on their own lines. A declaration placed
+  after a one-line rule (`.card { px: 16px; }`) is silently dropped, leaving
+  `var(--c)` undefined. Putting a usage on its own line inside a block can also
+  inline the raw value instead of emitting `var(--c)`.
 - **Warnings are easy to lose.** The compiler usually exits `0` even when it
   warns. `compile_file` returns that output, but `compile_string` returns only
   the CSS.
