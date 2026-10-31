@@ -73,7 +73,7 @@ pip install -e ".[dev]"
 
 `style.fscss`:
 
-```fscss
+```css
 $accent: #8f6bff;
 
 @define card(sel:.card) {
@@ -170,7 +170,7 @@ fscss.init_django()
 
 Full language reference: <https://fscss.devtem.org/>.
 
-```fscss
+```css
 /* variables first — declarations after a one-line rule are dropped (see below) */
 $c: red;
 
@@ -201,9 +201,10 @@ $c: red;
 These are properties of the current wrapper and the vendored engine; they are
 worth knowing before you file a bug.
 
-- **The engine is a regex pipeline, not an AST parser.** Syntax it does not
+- **The engine, most features are not an AST parser.** Syntax it does not
   recognize is passed through unchanged. A typo may produce invalid CSS rather
   than a compile error.
+  It warns in FSCSS-based syntax errors, not parsing CSS syntax to warn or detect errors. 
 - **Shorthand families need a trailing semicolon.** `bg: red;` expands, but
   `body{bg:red}` (no `;`) is left untouched. The short aliases (`m`, `px`,
   `rounded`, …) also accept a closing `}`.
@@ -222,7 +223,7 @@ worth knowing before you file a bug.
   calls do not share engine state. `watch_dir` runs compiles on one thread.
 - **`@define` bodies containing braces must be quoted/backticked.**
 - **Upstream bugs exist** (e.g. `@arr.x!+[…]` raises, `$/var || fallback` is
-  broken in 1.2.6). Report engine semantics upstream; report wrapper behavior
+  broken in 1.2.6) fscss may not support this method again. Report engine semantics upstream; report wrapper behavior
   here.
 
 ---
@@ -269,7 +270,7 @@ to harden it. Please:
 
 Upstream project: <https://github.com/Figsh/xfscss> ·
 Docs: <https://fscss.devtem.org/> ·
-Modules: <https://github.com/fscss-ttr/fscss-modules>
+Modules: <https://github.com/fscss-ttr/FSCSS>
 
 ## License
 
