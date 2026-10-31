@@ -21,7 +21,7 @@ and other transforms. The compiler is JavaScript (`xfscss`, npm package
 Ekuyik Sam. Docs: <https://fscss.devtem.org/>.
 
 **This package** is a Python distribution, maintained by
-[Omonire](https://github.com/omonire). It does **not** reimplement FSCSS in
+[Omonire](https://github.com/Omonire). It does **not** reimplement FSCSS in
 Python. It ships a pinned copy of the upstream compiler and runs it with Node:
 
 ```
