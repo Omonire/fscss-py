@@ -14,11 +14,10 @@ writing JavaScript.
 ## FSCSS and this package
 
 **FSCSS** is the upstream CSS preprocessor. It extends plain CSS with property
-shorthands, `$variables`, `@define` mixins, `@import` modules, arrays, events,
+shorthands, variables, `@define` mixins, `@import` modules, arrays, events,
 and other transforms. The compiler is JavaScript (`xfscss`, npm package
 `fscss`), maintained by [Figsh](https://github.com/Figsh) under
-[fscss-ttr](https://github.com/fscss-ttr); the language was conceived by
-Ekuyik Sam. Docs: <https://fscss.devtem.org/>.
+[fscss-ttr](https://github.com/fscss-ttr); Docs: <https://fscss.devtem.org/>.
 
 **This package** is a Python distribution, maintained by
 [Omonire](https://github.com/Omonire). It does **not** reimplement FSCSS in
@@ -76,18 +75,19 @@ pip install -e ".[dev]"
 ```css
 $accent: #8f6bff;
 
-@define card(sel:.card) {
-  `@use(sel) {
+@define card(sel:.card) {`
+  @use(sel) {
     px: 16px;
     py: 14px;
     rounded: 12px;
     stack: 12px;
-  }`
-}
+  }
+`}
 
 body {
   bg: #0b0a13;
   color: $accent!;
+  ff: sans-serif;
 }
 
 @card(.panel)
@@ -185,9 +185,9 @@ $c: red;
 .box { color: $c!; }          /* → var(--c) */
 
 /* reusable mixins */
-@define center(elem) {
-  `@use(elem) { display: flex; align-items: center; }`
-}
+@define center(elem) {`
+  @use(elem) { display: flex; align-items: center; }
+`}
 @center(.hero)
 
 /* selective imports */
@@ -223,7 +223,7 @@ worth knowing before you file a bug.
   calls do not share engine state. `watch_dir` runs compiles on one thread.
 - **`@define` bodies containing braces must be quoted/backticked.**
 - **Upstream bugs exist** (e.g. `@arr.x!+[…]` raises, `$/var || fallback` is
-  broken in 1.2.6) fscss may not support this method again. Report engine semantics upstream; report wrapper behavior
+  broken in 1.2.6) fscss may improve or drop this method. Report engine semantics upstream; report wrapper behavior
   here.
 
 ---
