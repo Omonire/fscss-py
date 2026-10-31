@@ -43,9 +43,11 @@ import fscss
 # Compile file
 fscss.compile_file("style.fscss", "style.css")
 
-# Compile string
-css = fscss.compile_string("@c: red; body{ c: @c; }")
+# Compile string (FSCSS uses $variables, not @variables)
+css = fscss.compile_string("$c: red;\nbody{ color: $c!; }")
 print(css)
+# :root{--c: red;}
+# body{ color: var(--c); }
 
 # Also available as compile()
 fscss.compile("style.fscss", "style.css")
