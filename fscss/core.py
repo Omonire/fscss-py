@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import tempfile
@@ -7,6 +8,26 @@ from typing import Optional, Union
 __all__ = ["compile_string", "compile_file", "compile"]
 
 _node_cache: Optional[str] = None
+
+
+def _read_text_normalized(path: Path) -> str:
+    """Read a file as text, stripping BOMs and tolerating common encodings."""
+    data = path.read_bytes()
+    if data.startswith(b"\xff\xfe"):
+        return data[2:].decode("utf-16-le")
+    if data.startswith(b"\xfe\xff"):
+        return data[2:].decode("utf-16-be")
+    if data.startswith(b"\xef\xbb\xbf"):
+        return data[3:].decode("utf-8")
+    try:
+        return data.decode("utf-8")
+    except UnicodeError:
+        for enc in ("utf-16-le", "utf-16-be", "latin-1"):
+            try:
+                return data.decode(enc)
+            except UnicodeError:
+                continue
+        return data.decode("utf-8", errors="replace")
 
 
 def _find_node() -> Optional[str]:
@@ -56,9 +77,29 @@ def compile_file(
 
     workdir = cwd or input_path.parent
 
+    compiled_input = input_path
+    temp_input: Optional[Path] = None
+    raw = input_path.read_bytes()
+    needs_utf8 = (
+        raw.startswith(b"\xff\xfe")
+        or raw.startswith(b"\xfe\xff")
+        or raw.startswith(b"\xef\xbb\xbf")
+    )
+    if not needs_utf8:
+        try:
+            raw.decode("utf-8")
+        except UnicodeError:
+            needs_utf8 = True
+    if needs_utf8:
+        fd, tmp_name = tempfile.mkstemp(suffix=".fscss", dir=str(input_path.parent))
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(_read_text_normalized(input_path))
+        temp_input = Path(tmp_name)
+        compiled_input = temp_input
+
     try:
         result = subprocess.run(
-            [node, str(bin_path), str(input_path), str(output_path)],
+            [node, str(bin_path), str(compiled_input), str(output_path)],
             cwd=str(workdir),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -77,6 +118,12 @@ def compile_file(
     except subprocess.CalledProcessError as e:
         msg = e.stdout or e.stderr or str(e)
         raise RuntimeError(msg.strip()) from e
+    finally:
+        if temp_input is not None:
+            try:
+                temp_input.unlink()
+            except OSError:
+                pass
 
 
 def compile_string(
@@ -90,26 +137,28 @@ def compile_string(
 
     If output_path is not provided, compiled CSS is returned as a string.
     """
-    if output_path is None:
-        input_dir = Path(input_dir).resolve()
-        input_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=str(input_dir)) as td:
-            tmp_in = Path(td) / "tmp.fscss"
-            tmp_out = tmp_in.with_suffix(".css")
-            tmp_in.write_text(source, encoding="utf-8")
-            compile_file(tmp_in, tmp_out, cwd=input_dir, timeout=timeout)
-            if tmp_out.exists():
-                return tmp_out.read_text(encoding="utf-8")
-            return ""
-    else:
+    input_dir = Path(input_dir).resolve()
+    input_dir.mkdir(parents=True, exist_ok=True)
+
+    fd, tmp_name = tempfile.mkstemp(suffix=".fscss", dir=str(input_dir))
+    tmp_in = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(source)
+        if output_path is None:
+            with tempfile.TemporaryDirectory() as td:
+                tmp_out = Path(td) / "tmp.css"
+                compile_file(tmp_in, tmp_out, cwd=input_dir, timeout=timeout)
+                return _read_text_normalized(tmp_out) if tmp_out.exists() else ""
         output_path = Path(output_path).resolve()
-        out_dir = output_path.parent
-        out_dir.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=str(out_dir)) as td:
-            tmp_in = Path(td) / "tmp.fscss"
-            tmp_in.write_text(source, encoding="utf-8")
-            compile_file(tmp_in, output_path, cwd=out_dir, timeout=timeout)
-            return output_path.read_text(encoding="utf-8") if output_path.exists() else ""
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        compile_file(tmp_in, output_path, cwd=input_dir, timeout=timeout)
+        return _read_text_normalized(output_path) if output_path.exists() else ""
+    finally:
+        try:
+            tmp_in.unlink()
+        except OSError:
+            pass
 
 
 compile = compile_file

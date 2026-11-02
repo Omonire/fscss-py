@@ -53,3 +53,25 @@ def test_compile_file_invalid_syntax():
         out.write_text("")
         # Should not raise; compiler reports failure inline
         fscss.compile_file(src, out)
+
+
+def test_compile_file_utf16_input():
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td)
+        src = d / "u16.fscss"
+        src.write_bytes("body { bg: red; }\n".encode("utf-16"))
+        out = d / "u16.css"
+        fscss.compile_file(src, out)
+        css = out.read_text(encoding="utf-8")
+        assert "background: red" in css
+        assert "\ufffd" not in css
+
+
+def test_compile_string_relative_import():
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td)
+        (d / "dep.fscss").write_text(
+            "@define hi(sel){ `@use(sel){ color: #f00; }` }\n", encoding="utf-8"
+        )
+        css = fscss.compile_string('@import((hi) from "./dep.fscss")\n@hi(body)\n', input_dir=d)
+        assert "color: #f00" in css
