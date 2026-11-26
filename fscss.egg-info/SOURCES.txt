@@ -1,3 +1,4 @@
+LICENSE
 MANIFEST.in
 README.md
 pyproject.toml
@@ -5,11 +6,14 @@ fscss/__init__.py
 fscss/__main__.py
 fscss/cli.py
 fscss/core.py
+fscss/environment.py
 fscss/integrations.py
+fscss/node_install.py
 fscss.egg-info/PKG-INFO
 fscss.egg-info/SOURCES.txt
 fscss.egg-info/dependency_links.txt
 fscss.egg-info/entry_points.txt
+fscss.egg-info/requires.txt
 fscss.egg-info/top_level.txt
 fscss/_vendor/xfscss/LICENSE
 fscss/_vendor/xfscss/README.md
@@ -22,3 +26,8 @@ fscss/_vendor/xfscss/lib/functions/impFrom.js
 fscss/_vendor/xfscss/lib/functions/impSel.js
 fscss/_vendor/xfscss/lib/functions/procImp.js
 fscss/_vendor/xfscss/lib/functions/shorthands.js
+tests/test_cli.py
+tests/test_cli_commands.py
+tests/test_core.py
+tests/test_environment.py
+tests/test_node_install.py
