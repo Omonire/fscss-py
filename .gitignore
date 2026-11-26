@@ -15,3 +15,5 @@ venv/
 .DS_Store
 xfscss/
 Tut/
+home.css
+index.py

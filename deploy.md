@@ -31,3 +31,7 @@ Use API token: username `__token__`, password `<your-api-token>`
 - Version in `pyproject.toml` must be bumped if republishing
 - Node.js required at runtime
 - Only upload after `twine check` passes
+
+---
+
+Engineered and Written by Omonire

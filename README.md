@@ -105,12 +105,36 @@ fscss style.fscss style.css
 ## CLI
 
 ```bash
-fscss input.fscss [output.css]   # default output: input.css
-fscss input.fscss --watch        # recompile on change (~1s poll)
+# Set up this machine/project (checks Python/OS/Node, offers to install Node)
+fscss init
+
+# Compile
+fscss input.fscss [output.css]        # shorthand for `fscss compile`
+fscss compile input.fscss -o out.css
+fscss compile input.fscss --check     # exit 1 if output is out of date
+fscss compile input.fscss --strict    # warnings become exit 2
+
+# Directories
+fscss build static                    # compile every .fscss
+fscss build static --check            # CI drift check, writes nothing
+fscss clean static [--dry-run]        # delete generated .css files
+
+# Environment
+fscss doctor [--check] [--json]       # read-only environment report
+fscss env [--json]                    # resolved paths and versions
+fscss report [--json]                 # paste-ready bug report
+fscss completion bash|zsh|fish|powershell
+fscss input.fscss --watch             # recompile on change (~1s poll)
 fscss --version
 ```
 
-Stdout/stderr from the compiler is printed. Exit code is non-zero only if the Node process fails.
+`fscss init` detects `winget`/`choco`/`scoop`/`brew`/`apt`/`dnf`/`pacman`/
+`zypper`/`apk`, prints the install command, and asks `[Y/n]` before installing
+Node.js 20+. Use `--yes` in non-interactive shells, `FSCSS_NO_DOWNLOAD=1` to
+forbid installation, and `FSCSS_NODE` to point at a specific Node binary.
+
+Stdout/stderr from the compiler is printed. Exit codes: `0` success, `1`
+compile/check failure, `2` environment problem, `130` interrupted.
 
 ---
 
@@ -228,7 +252,9 @@ CI: lint + tests on Ubuntu/Windows, Python 3.8–3.12, wheel/sdist + `twine chec
 ```
 fscss/
 ├── core.py           # subprocess bridge
-├── cli.py            # argparse CLI
+├── cli.py            # argparse CLI (compile/watch/init/doctor/build/...)
+├── environment.py    # Python/OS/Node/engine/package-manager checks
+├── node_install.py   # install Node via the platform package manager
 ├── integrations.py   # dir / watch / Flask / Django
 └── _vendor/xfscss/   # pinned upstream (1.2.6)
 ```
@@ -239,7 +265,7 @@ To bump the engine: replace `_vendor/xfscss`, update version notes, run the suit
 
 ## Feedback
 
-Early release (`0.1.x`). Real projects help most:
+Early release (`0.2.x`). Real projects help most:
 
 1. `pip install fscss`
 2. Compile an existing `.fscss` file (CLI and API).
@@ -250,9 +276,24 @@ Early release (`0.1.x`). Real projects help most:
 
 **Upstream:** [Figsh/xfscss](https://github.com/Figsh/xfscss) · **Docs:** [fscss.devtem.org](https://fscss.devtem.org/) · **Modules:** [fscss-ttr/FSCSS](https://github.com/fscss-ttr/FSCSS) · **Hub (Python):** [python-compiler](https://hub.devtem.org/python-compiler)
 
----
+**Developers** [Figsh](https://github.com/Figsh) -> Core Engineer
+[Omonire](https://github.com/Omonire) -> Python Engineer and Maintainer
 
+---
+## Verify If FSCSS has been installed
+
+```bash
+pip show fscss
+# This will check and give a litle description about FSCSS library and alsp its version
+# Or Use
+fscss --version
+```
+---
 ## License
 
 MIT — see [LICENSE](LICENSE).  
 Vendored compiler: MIT © Figsh — see `fscss/_vendor/xfscss/LICENSE`.
+
+---
+
+Engineered and Written by Omonire

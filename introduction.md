@@ -48,3 +48,7 @@ If a stylesheet compiles incorrectly, the bug is almost always upstream in `xfsc
 - Python wrapper, CLI, and integrations: Omonire
 
 FSCSS is MIT licensed. This wrapper is MIT licensed as well.
+
+---
+
+Engineered and Written by Omonire

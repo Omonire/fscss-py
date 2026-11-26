@@ -3,7 +3,7 @@ try:
 
     __version__ = metadata.version("fscss")
 except Exception:
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
 from .core import compile, compile_file, compile_string
 from .integrations import (

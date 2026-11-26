@@ -31,8 +31,11 @@ def _read_text_normalized(path: Path) -> str:
 
 
 def _find_node() -> Optional[str]:
-    """Find node executable."""
+    """Find node executable (``FSCSS_NODE`` overrides PATH lookup)."""
     global _node_cache
+    override = os.environ.get("FSCSS_NODE")
+    if override:
+        return override
     if _node_cache is not None:
         return _node_cache
     for name in ("node", "nodejs"):

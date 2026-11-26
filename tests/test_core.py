@@ -67,6 +67,12 @@ def test_compile_file_utf16_input():
         assert "\ufffd" not in css
 
 
+def test_find_node_env_override(monkeypatch):
+    monkeypatch.setattr(core, "_node_cache", None)
+    monkeypatch.setenv("FSCSS_NODE", "/custom/node")
+    assert core._find_node() == "/custom/node"
+
+
 def test_compile_string_relative_import():
     with tempfile.TemporaryDirectory() as td:
         d = Path(td)
