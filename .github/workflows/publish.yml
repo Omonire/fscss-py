@@ -3,6 +3,7 @@ name: Publish to PyPI
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,8 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install build
 
+      - name: Clean dist
+        run: rm -rf dist
+
       - name: Build package
         run: python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
